@@ -1,87 +1,82 @@
 .ingredient-item {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.75rem 1.25rem;
-    margin: 0.5rem;
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: white;
-    min-width: 70px;
-    min-height: 44px;
-    text-align: center;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.25rem;
+  margin: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: white;
+  min-width: 70px;
+  min-height: 44px;
+  text-align: center;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ingredient-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+.ingredient-item::after {
+  content: attr(data-structuur);
+  position: absolute;
+  bottom: -1.1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.65rem;
+  color: #4b5563;
+  opacity: 0.8;
+}
+
+.structure-korrel {
+  background-color: #8b5cf6;
+  background-image: radial-gradient(#ffffff25 1px, transparent 1px);
+  background-size: 5px 5px;
+  border-radius: 0.5rem;
+}
+
+.structure-grove {
+  background-color: #7c3aed;
+  background-image: radial-gradient(#ffffff35 3px, transparent 3px);
+  background-size: 12px 12px;
+  border-radius: 0.25rem;
+  padding: 1rem 1.25rem;
+}
+
+.structure-glad {
+  background-color: #10b981;
+  border: 2px solid #ffffff40;
+  border-radius: 9999px;
+  background-blend-mode: overlay;
+}
+
+.structure-slijm {
+  background-color: #84cc16;
+  border-radius: 9999px;
+  box-shadow: 0 0 20px 6px #d9f99d88, inset 0 0 10px #d9f99d55;
+  animation: pulse-slime 1.5s infinite ease-in-out;
+  background-image: 
+    radial-gradient(circle at 20% 20%, rgba(255,255,255,0.1) 2%, transparent 2%),
+    radial-gradient(circle at 70% 70%, rgba(255,255,255,0.08) 1.5%, transparent 2%),
+    linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+  background-size: 12px 12px, 14px 14px, cover;
+  background-blend-mode: overlay;
+}
+
+@keyframes pulse-slime {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 10px #bef264;
   }
-  
-  .ingredient-item:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  50% {
+    transform: scale(1.08);
+    box-shadow: 0 0 20px #bef264;
   }
-  
-  /* Structuurlabel onder elk item */
-  .ingredient-item::after {
-    content: attr(data-structuur);
-    position: absolute;
-    bottom: -1.1rem;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 0.65rem;
-    color: #4b5563;
-    opacity: 0.8;
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 10px #bef264;
   }
-  
-  /* Korrel – rechthoekig, kleine stipjes */
-  .structure-korrel {
-    background-color: #8b5cf6; /* paarstint */
-    background-image: radial-gradient(#ffffff25 1px, transparent 1px);
-    background-size: 5px 5px;
-    border-radius: 0.5rem;
-  }
-  
-  /* Grove korrel – vierkant, grote stippen */
-  .structure-grove {
-    background-color: #7c3aed;
-    background-image: radial-gradient(#ffffff35 3px, transparent 3px);
-    background-size: 12px 12px;
-    border-radius: 0.25rem;
-    padding: 1rem 1.25rem;
-  }
-  
-  /* Glad – zachte kleur, afgeronde pill */
-  .structure-glad {
-    background-color: #10b981; /* teal */
-    border: 2px solid #ffffff40;
-    border-radius: 9999px;
-    background-blend-mode: overlay;
-  }
-  
-  .structure-slijm {
-    background-color: #84cc16;
-    border-radius: 9999px;
-    box-shadow: 0 0 20px 6px #d9f99d88, inset 0 0 10px #d9f99d55;
-    animation: pulse-slime 1.5s infinite ease-in-out;
-    background-image: 
-      radial-gradient(circle at 20% 20%, rgba(255,255,255,0.1) 2%, transparent 2%),
-      radial-gradient(circle at 70% 70%, rgba(255,255,255,0.08) 1.5%, transparent 2%),
-      linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
-    background-size: 12px 12px, 14px 14px, cover;
-    background-blend-mode: overlay;
-  }
-  
-  @keyframes pulse-slime {
-    0% {
-      transform: scale(1);
-      box-shadow: 0 0 10px #bef264;
-    }
-    50% {
-      transform: scale(1.08);
-      box-shadow: 0 0 20px #bef264;
-    }
-    100% {
-      transform: scale(1);
-      box-shadow: 0 0 10px #bef264;
-    }
-  }
-  
+}
