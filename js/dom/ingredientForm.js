@@ -74,6 +74,16 @@ function renderIngredientVisual(ingredient) {
   div.className = `ingredient-item ${structureClass(ingredient.structure)}`;
   div.style.backgroundColor = ingredient.color;
   div.textContent = ingredient.name;
+  div.setAttribute('data-speed', ingredient.speed);
+  div.setAttribute('data-name', ingredient.name);
+  div.setAttribute('data-color', ingredient.color);
+  div.setAttribute('data-mixTime', ingredient.mixTime);
+  div.setAttribute('draggable', true);
+  div.addEventListener('dragstart', (e) => {
+    e.dataTransfer.setData('application/json', JSON.stringify(ingredient));
+    e.dataTransfer.effectAllowed = 'move';
+  });
+
   container.appendChild(div);
 }
 
