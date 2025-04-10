@@ -1,4 +1,4 @@
-import { Ingredient } from '../components/Ingredient.js';
+import { Ingredient } from '../models/ingredient.js';
 
 let ingredients = [];
 
