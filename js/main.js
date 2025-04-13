@@ -1,7 +1,5 @@
-import { initApp } from './dom/init.js';
-import { renderIngredientForm } from './dom/ingredientForm.js';
+import { renderApp } from './dom/appRenderer.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-  initApp();
-  renderIngredientForm();
+  renderApp();
 });
