@@ -4,6 +4,7 @@ import { renderPotsPanel } from './potsPanel.js';
 import { renderMachinesPanel } from './machinePanel.js';
 import { renderWeatherPanel } from './weatherPanel.js';
 import { renderTestModeButton } from './colorTestMode.js';
+import { renderExampleDataButton } from './exampleData.js';
 
 export function renderApp() {
     initApp();
@@ -12,4 +13,5 @@ export function renderApp() {
     renderMachinesPanel();
     renderWeatherPanel();
     renderTestModeButton();
+    renderExampleDataButton();
 }
