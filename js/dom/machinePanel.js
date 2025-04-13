@@ -1,10 +1,29 @@
 import { Machine } from '../models/Machine.js';
 import { Pot } from '../models/Pot.js';
+import { averageColor } from '../utils/colorUtils.js';
+import { renderPotVisual, pots, savePots } from './potsPanel.js';
+import { getCurrentWeather } from './weatherPanel.js';
 
+const activeMixingMachines = new Set();
 let machineIdCounter = 1;
 let machines = [];
+let activeHallId = 1;
 
 export function renderMachinesPanel() {
+machines = [];
+  const hall1Btn = document.getElementById('hall-1');
+  const hall2Btn = document.getElementById('hall-2');
+
+  hall1Btn.addEventListener('click', () => {
+    activeHallId = 1;
+    renderMachinesForHall();
+  });
+
+  hall2Btn.addEventListener('click', () => {
+    activeHallId = 2;
+    renderMachinesForHall();
+  });
+
   const panel = document.getElementById('machines-panel');
 
   const form = document.createElement('form');
@@ -14,12 +33,10 @@ export function renderMachinesPanel() {
       <label class="block text-sm font-medium text-gray-700 mb-1">Mengsnelheid</label>
       <input type="number" name="speed" required class="w-full border border-gray-300 rounded-lg p-2" />
     </div>
-
     <div>
       <label class="block text-sm font-medium text-gray-700 mb-1">Mengtijd (ms)</label>
       <input type="number" name="mixTime" required class="w-full border border-gray-300 rounded-lg p-2" />
     </div>
-
     <div>
       <label class="block text-sm font-medium text-gray-700 mb-1">Hal</label>
       <select name="hall" class="w-full border border-gray-300 rounded-lg p-2">
@@ -27,7 +44,6 @@ export function renderMachinesPanel() {
         <option value="2">Hal 2</option>
       </select>
     </div>
-
     <div>
       <button type="submit" class="w-full px-4 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg transition">
         Voeg mengmachine toe
@@ -50,15 +66,32 @@ export function renderMachinesPanel() {
 
     machines.push(machine);
     saveMachines();
-    renderMachineCard(machine);
+
+    if (machine.hall === activeHallId) {
+      renderMachineCard(machine);
+    }
+
     form.reset();
   });
 
   loadMachines();
 }
 
+function renderMachinesForHall() {
+  const hallContent = document.getElementById('hall-content');
+  hallContent.innerHTML = '';
+
+  const filtered = machines.filter(m => m.hall === activeHallId);
+  if (filtered.length === 0) {
+    hallContent.innerHTML = `<p class="text-gray-500 italic">Geen machines in Hal ${activeHallId}</p>`;
+    return;
+  }
+
+  filtered.forEach(renderMachineCard);
+}
+
 function renderMachineCard(machine) {
-  const container = document.getElementById('machines-container');
+  const container = document.getElementById('hall-content');
 
   const div = document.createElement('div');
   div.className = 'bg-gray-100 rounded-lg p-4 shadow flex flex-col gap-2 relative';
@@ -94,52 +127,112 @@ function renderMachineCard(machine) {
 
     const potData = JSON.parse(e.dataTransfer.getData('application/json'));
     const potDiv = document.querySelector(`[data-pot-id="${potData.id}"]`);
-    if (potDiv) {
-      potDiv.remove();
-    }
+    if (potDiv) potDiv.remove();
 
-    const status = document.createElement('div');
-    status.className = 'mt-2 text-sm text-blue-600 animate-pulse';
-    status.textContent = `Machine ${machine.id} is bezig met mengen...`;
-    div.appendChild(status);
+    const oldBadge = div.querySelector('.weather-badge');
+    if (oldBadge) oldBadge.remove();
+
+    const weather = getCurrentWeather();
+    let extraText = '';
+    let icon = '';
+
+    if (weather) {
+      const condition = (weather.condition || '').toLowerCase();
+      const temp = weather.temperature;
+
+      if (condition.includes('rain') || condition.includes('snow') || condition.includes('sneeuw')) {
+        extraText += '10% extra door regen of sneeuw\n';
+        icon += '<i class="fas fa-cloud-showers-heavy mr-1"></i>';
+      }
+      if (temp < 10) {
+        extraText += '15% extra door kou\n';
+        icon += '<i class="fas fa-snowflake mr-1"></i>';
+      }
+      if (temp > 35) {
+        extraText += 'Maximaal 1 machine mag mengen\n';
+        icon += '<i class="fas fa-temperature-high mr-1"></i>';
+      }
+
+      if (extraText) {
+        const badge = document.createElement('div');
+        badge.className = 'weather-badge text-xs text-yellow-800 bg-yellow-100 border border-yellow-300 px-3 py-1 rounded mb-2 whitespace-pre-wrap flex items-start gap-1';
+        badge.innerHTML = `${icon}<div>${extraText.trim()}</div>`;
+        div.insertBefore(badge, div.querySelector('.mt-2'));
+      }
+    }
 
     const mixTimes = Array.isArray(potData.contents)
       ? potData.contents.map(i => parseInt(i.mixTime) || 0)
       : [];
 
-    const longestTime = Math.max(machine.mixTime, ...mixTimes);
+    let longestTime = Math.max(machine.mixTime, ...mixTimes);
+    if (weather) {
+      const condition = (weather.condition || '').toLowerCase();
+      const temp = weather.temperature;
+
+      if (condition.includes('rain') || condition.includes('snow') || condition.includes('sneeuw')) {
+        longestTime *= 1.1;
+      }
+      if (temp < 10) {
+        longestTime *= 1.15;
+      }
+      if (temp > 35 && activeMixingMachines.size >= 1) {
+        alert(`❌ Het is boven de 35°C. Er mag slechts één machine tegelijk mengen. Probeer het opnieuw zodra een andere klaar is.`);
+      
+        const index = pots.findIndex(p => p.id === potData.id);
+        if (index !== -1) {
+          renderPotVisual(pots[index]);
+        }
+      
+        return;
+      }
+      
+      
+    } else {
+      console.warn('Weerdata is niet beschikbaar. Mengtijd wordt niet aangepast.');
+    }
+    const status = document.createElement('div');
+    status.className = 'mt-2 text-sm text-blue-600 animate-pulse';
+    status.textContent = `Machine ${machine.id} is bezig met mengen...`;
+    div.appendChild(status);
+
+    longestTime = Math.round(longestTime);
+    activeMixingMachines.add(machine.id);
 
     setTimeout(() => {
       status.remove();
-
+      activeMixingMachines.delete(machine.id);
+      
       const outputContainer = div.querySelector(`#output-${machine.id}`);
-      if (!outputContainer) {
-        console.warn(`⚠️ Output container niet gevonden voor ${machine.id}`);
-        return;
+      if (!outputContainer) return;
+
+      const mixedColor = averageColor(potData.contents || []);
+      const badge = document.createElement('div');
+      badge.className = 'text-white text-xs px-2 py-1 rounded-full shadow';
+      badge.style.backgroundColor = mixedColor;
+      badge.textContent = `✅ ${potData.name} klaar`;
+      outputContainer.appendChild(badge);
+
+      const index = pots.findIndex(p => p.id === potData.id);
+      if (index !== -1) {
+        pots[index].status = 'klaar';
+        pots[index].mixedColor = mixedColor;
+        pots[index].contents = potData.contents;
+        savePots();
+        renderPotVisual(pots[index]);
       }
 
-        const badge = document.createElement('div');
-        badge.className = 'text-white text-xs px-2 py-1 rounded-full shadow';
-        badge.style.backgroundColor = potData.contents?.[0]?.color || '#4ade80';
-        badge.textContent = `✅ ${potData.name}`;
-        outputContainer.appendChild(badge);
-
-        const storedPots = JSON.parse(localStorage.getItem('futureColor.pots')) || [];
-
-        const updatedPots = storedPots.map((p) => {
-        if (p.id === potData.id) {
-            return {
-            ...p,
-            contents: potData.contents || [],
-            name: potData.name,
-            status: 'klaar'
-            };
+      const savedMachines = JSON.parse(localStorage.getItem('futureColor.machines')) || [];
+      const updatedMachines = savedMachines.map(m => {
+        if (m.id === machine.id) {
+          return {
+            ...m,
+            finishedPots: [...(m.finishedPots || []), potData.id]
+          };
         }
-        return p;
-        });
-
-        localStorage.setItem('futureColor.pots', JSON.stringify(updatedPots));
-
+        return m;
+      });
+      localStorage.setItem('futureColor.machines', JSON.stringify(updatedMachines));
     }, longestTime);
   });
 
@@ -159,9 +252,10 @@ function loadMachines() {
 
   parsed.forEach((m) => {
     const loadedMachine = new Machine(m.id, m.speed, m.mixTime, m.hall);
+    loadedMachine.finishedPots = m.finishedPots || [];
     machines.push(loadedMachine);
-    renderMachineCard(loadedMachine);
   });
 
   machineIdCounter = parsed.length + 1;
+  renderMachinesForHall();
 }
