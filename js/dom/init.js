@@ -1,7 +1,7 @@
 export function initApp() {
-    const app = document.getElementById('app');
-  
-    app.innerHTML = `
+  const app = document.getElementById('app');
+
+  app.innerHTML = `
       <section id="machines-panel" class="bg-white p-6">
       </section>
       <section id="halls-panel" class="bg-white px-6 col-span-1 md:col-span-2">
@@ -27,6 +27,5 @@ export function initApp() {
         <div id="pots-container" class="grid grid-cols-2 gap-4"></div>
       </section>
     </div>
-  `;  
-  }
-  
+  `;
+}

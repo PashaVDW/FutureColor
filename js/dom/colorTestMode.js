@@ -1,5 +1,6 @@
 import { pots } from './potsPanel.js';
 import { renderApp } from './appRenderer.js';
+import { getTriadicColors, rgbToHex, hexToHsl } from '../utils/colorUtils.js';
 
 export function renderTestModeButton() {
   const testBtn = document.createElement('button');
@@ -15,7 +16,7 @@ export function renderTestModeButton() {
 
 function renderColorTestMode() {
   const app = document.getElementById('app');
-  app.innerHTML = ''; 
+  app.innerHTML = '';
 
   const section = document.createElement('section');
   section.className = 'p-6 max-w-5xl mx-auto';
@@ -78,6 +79,16 @@ function renderColorTestMode() {
         }
       });
 
+      cell.addEventListener('click', () => {
+        const bg = cell.style.backgroundColor;
+        if (!bg || bg === 'rgb(243, 244, 246)') return;
+
+        const hex = rgbToHex(bg);
+        const triadic = getTriadicColors(hex);
+
+        showTriadicPopup(hex, triadic);
+      });
+
 
       grid.appendChild(cell);
     }
@@ -101,4 +112,30 @@ function renderColorTestMode() {
 
       potZone.appendChild(div);
     });
+}
+
+function showTriadicPopup(originalHex, triadicColors) {
+  const modal = document.createElement('div');
+  modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+
+  modal.innerHTML = `
+    <div class="bg-white p-6 rounded-xl shadow max-w-md w-full space-y-4 text-center">
+      <h3 class="text-lg font-bold text-gray-800">Triadic Kleuren</h3>
+      <div class="flex justify-center gap-4">
+        <div>
+          <div class="w-12 h-12 rounded-full mx-auto mb-1" style="background:${originalHex}"></div>
+          <div class="text-xs text-gray-600">Origineel: ${originalHex.toUpperCase()}</div>
+          <div class="text-xs text-gray-600"> HSL(${hexToHsl(originalHex).h}, ${hexToHsl(originalHex).s}%, ${hexToHsl(originalHex).l}%)</div>
+        </div>
+        ${triadicColors.map(c => `
+          <div>
+            <div class="w-12 h-12 rounded-full mx-auto mb-1" style="background:${c.hex}"></div>
+            <div class="text-xs text-gray-600">${c.hex.toUpperCase()}<br>HSL(${c.hsl.h}, ${c.hsl.s}%, ${c.hsl.l}%)</div>
+          </div>
+        `).join('')}
+      </div>
+      <button class="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded" onclick="this.closest('.fixed').remove()">Sluit</button>
+    </div>
+  `;
+  document.body.appendChild(modal);
 }

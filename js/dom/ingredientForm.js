@@ -108,7 +108,7 @@ function loadIngredients() {
   if (!Array.isArray(parsed)) return;
 
   parsed.forEach((item) => {
-    const ingredient = new Ingredient(item.name, item.mixTime, item.speed,item.color,item.structure);
+    const ingredient = new Ingredient(item.name, item.mixTime, item.speed, item.color, item.structure);
     ingredients.push(ingredient);
     renderIngredientVisual(ingredient);
   });
